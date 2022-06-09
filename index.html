@@ -51,17 +51,20 @@ uniform int type;
 
 uniform bool show_env;
 
-uniform float RightEye_Vertices[MAX_SIZE];
-uniform float LeftEye_Vertices[MAX_SIZE];
+uniform int no_faces;
 
-uniform float RightIris_Vertices[MAX_SIZE];
-uniform float LeftIris_Vertices[MAX_SIZE];
+uniform sampler2D RightEye_Vertices;
+uniform sampler2D LeftEye_Vertices;
 
-uniform float RightEyebrow_Vertices[MAX_SIZE];
-uniform float LeftEyebrow_Vertices[MAX_SIZE];
+uniform sampler2D RightIris_Vertices;
+uniform sampler2D LeftIris_Vertices;
 
-uniform float Lips_Vertices[MAX_SIZE];
-uniform float Face_Vertices[MAX_SIZE];
+uniform sampler2D RightEyebrow_Vertices;
+uniform sampler2D LeftEyebrow_Vertices;
+uniform vec3 eyebrowcolor;
+
+uniform sampler2D Lips_Vertices;
+// uniform float Face_Vertices[MAX_SIZE];
 
 out vec4 FragColor;
 
@@ -140,57 +143,99 @@ bool isInside(float Vertices[MAX_SIZE], int size, vec2 p){
 }
 
 void main(void) {
+	vec3 pixel = texelFetch(image, ivec2(int(gl_FragCoord.x), int(gl_FragCoord.y)), 0).rgb;
 	if(show_env){
-		vec3 pixel = texelFetch(image, ivec2(int(gl_FragCoord.x), int(gl_FragCoord.y)), 0).rgb;
 		FragColor = vec4(pixel, 1.0);
 	}
 	
 	if (type == 0){	// Clown
 		// For Face Oval
+		/*
 		if(isInside(Face_Vertices, MAX_SIZE_LIPS, gl_FragCoord.xy)){
 			FragColor = vec4(0.75686, 0.741176, 0.69411764, 1.0);
 		}
+		*/
 
 		// For Eye
-		if(isInside(RightEye_Vertices, MAX_SIZE_EYE, gl_FragCoord.xy)){
-			FragColor = vec4(0.376, 0.070588, 0.086274, 1.0);
-		}
-		if(isInside(LeftEye_Vertices, MAX_SIZE_EYE, gl_FragCoord.xy)){
-			FragColor = vec4(0.376, 0.070588, 0.086274, 1.0);
+		/*
+		for(int i = 0; i < no_faces; i++){
+			float curr_RightEye_Vertices[MAX_SIZE];
+			for(int j = 0; j < MAX_SIZE_EYE; j++) curr_RightEye_Vertices[j] = texelFetch(RightEye_Vertices, ivec2((i * MAX_SIZE_EYE) + j, 0), 0).r;
+
+			if(isInside(curr_RightEye_Vertices, MAX_SIZE_EYE, gl_FragCoord.xy)){
+				FragColor = vec4(0.376, 0.070588, 0.086274, 1.0);					
+			}
 		}
 
-		// For Iris
-		if(isInside(RightIris_Vertices, MAX_SIZE_IRIS, gl_FragCoord.xy)){
-			FragColor = vec4(0.0, 0.13725, 0.25490, 1.0);
+		for(int i = 0; i < no_faces; i++){
+			float curr_LeftEye_Vertices[MAX_SIZE];
+			for(int j = 0; j < MAX_SIZE_EYE; j++) curr_LeftEye_Vertices[j] = texelFetch(LeftEye_Vertices, ivec2((i * MAX_SIZE_EYE) + j, 0), 0).r;
+
+			if(isInside(curr_LeftEye_Vertices, MAX_SIZE_EYE, gl_FragCoord.xy)){
+				FragColor = vec4(0.376, 0.070588, 0.086274, 1.0);
+			}
 		}
-		if(isInside(LeftIris_Vertices, MAX_SIZE_IRIS, gl_FragCoord.xy)){
-			FragColor = vec4(0.0, 0.13725, 0.25490, 1.0);
+		*/
+
+		// For Iris
+		for(int i = 0; i < no_faces; i++){
+			float curr_RightIris_Vertices[MAX_SIZE];
+			for(int j = 0; j < MAX_SIZE_IRIS; j++) curr_RightIris_Vertices[j] = texelFetch(RightIris_Vertices, ivec2((i * MAX_SIZE_IRIS) + j, 0), 0).r;
+
+			if(isInside(curr_RightIris_Vertices, MAX_SIZE_IRIS, gl_FragCoord.xy)){
+				FragColor = vec4((pixel + eyebrowcolor) / 2.0, 1.0);
+			}
+		}
+		
+		for(int i = 0; i < no_faces; i++){
+			float curr_LeftIris_Vertices[MAX_SIZE];
+			for(int j = 0; j < MAX_SIZE_IRIS; j++) curr_LeftIris_Vertices[j] = texelFetch(LeftIris_Vertices, ivec2((i * MAX_SIZE_IRIS) + j, 0), 0).r;
+
+			if(isInside(curr_LeftIris_Vertices, MAX_SIZE_IRIS, gl_FragCoord.xy)){
+				FragColor = vec4((pixel + eyebrowcolor) / 2.0, 1.0);
+			}
 		}
 
 		// For Eye Brow
-		if(isInside(RightEyebrow_Vertices, MAX_SIZE_EYEBROW, gl_FragCoord.xy)){
-			FragColor = vec4(0.0, 0.13725, 0.25490, 1.0);
+		for(int i = 0; i < no_faces; i++){
+			float curr_RightEyebrow_Vertices[MAX_SIZE];
+			for(int j = 0; j < MAX_SIZE_EYEBROW; j++) curr_RightEyebrow_Vertices[j] = texelFetch(RightEyebrow_Vertices, ivec2((i * MAX_SIZE_EYEBROW) + j, 0), 0).r;
+
+			if(isInside(curr_RightEyebrow_Vertices, MAX_SIZE_EYEBROW, gl_FragCoord.xy)){
+				FragColor = vec4(0.376, 0.070588, 0.086274, 1.0);
+			}
 		}
-		if(isInside(LeftEyebrow_Vertices, MAX_SIZE_EYEBROW, gl_FragCoord.xy)){
-			FragColor = vec4(0.0, 0.13725, 0.25490, 1.0);
+		for(int i = 0; i < no_faces; i++){
+			float curr_LeftEyebrow_Vertices[MAX_SIZE];
+			for(int j = 0; j < MAX_SIZE_EYEBROW; j++) curr_LeftEyebrow_Vertices[j] = texelFetch(LeftEyebrow_Vertices, ivec2((i * MAX_SIZE_EYEBROW) + j, 0), 0).r;
+
+			if(isInside(curr_LeftEyebrow_Vertices, MAX_SIZE_EYEBROW, gl_FragCoord.xy)){
+				FragColor = vec4(0.376, 0.070588, 0.086274, 1.0);
+			}
 		}
 
-		// For Lips
-		
-		int MAX_SIZE_UPPER = MAX_SIZE_LIPS / 2;
-		float Lower_Lips_Vertices[MAX_SIZE];
-		for(int i = 0; i < MAX_SIZE_UPPER; i++) Lower_Lips_Vertices[i] = Lips_Vertices[i];
+		// For Lips - Do for lip
+		for(int f = 0; f < no_faces; f++){
+			float curr_Lips_Vertices[MAX_SIZE];
+			for(int j = 0; j < MAX_SIZE_LIPS; j++) curr_Lips_Vertices[j] = texelFetch(Lips_Vertices, ivec2((f * MAX_SIZE_LIPS) + j, 0), 0).r;
 
-		if(isInside(Lower_Lips_Vertices, MAX_SIZE_UPPER, gl_FragCoord.xy)){
-			FragColor = vec4(0.376, 0.070588, 0.086274, 1.0);
-		}
+			int MAX_SIZE_UPPER = MAX_SIZE_LIPS / 2;
+			float Lower_Lips_Vertices[MAX_SIZE];
+			for(int i = 0; i < MAX_SIZE_UPPER; i++) Lower_Lips_Vertices[i] = curr_Lips_Vertices[i];
 
-		float Upper_Lips_Vertices[MAX_SIZE];
-		for(int i = MAX_SIZE_UPPER; i < 2 * MAX_SIZE_UPPER; i++) Upper_Lips_Vertices[i - MAX_SIZE_UPPER] = Lips_Vertices[i];
-		if(isInside(Upper_Lips_Vertices, MAX_SIZE_UPPER, gl_FragCoord.xy)){
-			FragColor = vec4(0.376, 0.070588, 0.086274, 1.0);
+			if(isInside(Lower_Lips_Vertices, MAX_SIZE_UPPER, gl_FragCoord.xy)){
+				FragColor = vec4(0.376, 0.070588, 0.086274, 1.0);
+			}
+
+			float Upper_Lips_Vertices[MAX_SIZE];
+			for(int i = MAX_SIZE_UPPER; i < 2 * MAX_SIZE_UPPER; i++) Upper_Lips_Vertices[i - MAX_SIZE_UPPER] = curr_Lips_Vertices[i];
+
+			if(isInside(Upper_Lips_Vertices, MAX_SIZE_UPPER, gl_FragCoord.xy)){
+				FragColor = vec4(0.376, 0.070588, 0.086274, 1.0);
+			}
 		}
 	}
+	/*
 	else if(type == 1){	// Blue
 		// For Face Oval
 		if(isInside(Face_Vertices, MAX_SIZE_LIPS, gl_FragCoord.xy)){
@@ -226,6 +271,7 @@ void main(void) {
 			FragColor = vec4(0.0, 1.0, 0.0, 1.0);
 		}
 	}
+	*/
 	else{	// Alien
 
 	}
